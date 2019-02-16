@@ -29,18 +29,16 @@ public class LoginController {
 
 	//post登录
 	@RequestMapping(value = "/login",method = RequestMethod.POST)
-	public String login(@RequestParam("username") String username,@RequestParam("password") String password,Map<String,Object> map){
-		map.put("username",username);
-		map.put("password",password);
+	public String login(@RequestParam("username") String username,@RequestParam("password") String password,boolean rememberMe){
 		//添加用户认证信息
 		Subject subject = SecurityUtils.getSubject();
 		// 验证用户是否验证，即是否登录
 		if (!subject.isAuthenticated()) {
 			UsernamePasswordToken usernamePasswordToken = new UsernamePasswordToken();
-			usernamePasswordToken.setUsername(map.get("username").toString());
-			usernamePasswordToken.setPassword(map.get("password").toString().toCharArray());
+			usernamePasswordToken.setUsername(username);
+			usernamePasswordToken.setPassword(password.toCharArray());
 			// remembermMe记住密码
-			usernamePasswordToken.setRememberMe(false);
+			usernamePasswordToken.setRememberMe(rememberMe);
 			//进行验证，这里可以捕获异常，然后返回对应信息
 			subject.login(usernamePasswordToken);
 			System.out.println("loginSuccess");
@@ -59,12 +57,12 @@ public class LoginController {
 	}
 
 	//登出
-	@ResponseBody
+	/*@ResponseBody
 	@RequestMapping(value = "/logout")
 	public String logout(){
 		System.out.println("logout");
 		return "logout";
-	}
+	}*/
 	
 	//错误页面展示
 	@RequestMapping(value = "/error",method = RequestMethod.POST)
@@ -101,7 +99,7 @@ public class LoginController {
 		return "success";
 	}
 	
-	//注解的使用
+	//权限注解的使用
 	@ResponseBody
 	@RequiresRoles("admin")
 	@RequiresPermissions("create")
@@ -109,6 +107,13 @@ public class LoginController {
 	public String create(){
 		return "Create success!";
 	}
-	
+	//rememnber获取用户信息
+	@ResponseBody
+	@RequestMapping(value = "/userinfo")
+	public String userinfo(){
+		Subject subject = SecurityUtils.getSubject();
+		System.out.println(subject.getPrincipal());
+		return subject.toString();
+	}
 	
 }

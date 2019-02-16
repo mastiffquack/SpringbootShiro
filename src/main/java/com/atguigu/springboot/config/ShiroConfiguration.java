@@ -8,11 +8,15 @@ import org.apache.shiro.cache.ehcache.EhCacheManager;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
+import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.apache.shiro.web.servlet.SimpleCookie;
+import org.apache.shiro.codec.Base64;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 
 
 @Configuration
@@ -33,6 +37,8 @@ public class ShiroConfiguration {
 		securityManager.setRealm(myShiroRealm());
 		// 注入缓存管理器;
 		securityManager.setCacheManager(ehCacheManager());
+		//设置记住我
+		securityManager.setRememberMeManager(rememberMeManager());
 		return securityManager;
 	}
 	
@@ -56,8 +62,8 @@ public class ShiroConfiguration {
 		map.put("/addUser","anon");
 		map.put("/addRole","anon");
 		map.put("/login","anon");
-		//对所有用户认证
-		map.put("/**", "authc");
+//		map.put("/**", "authc");//对所有用户认证
+		map.put("/**", "user");//表示需要认证或记住我都能访问
 		/**
 		 * shiro主体思路：shiro默认第一次走MyShiroRealm 第二次走controller
 		 * 问题：未授权跳转到了登录页面，而不是首页
@@ -121,5 +127,29 @@ public class ShiroConfiguration {
 		EhCacheManager cacheManager = new EhCacheManager();
 		cacheManager.setCacheManagerConfigFile("classpath:ehcache.xml");
 		return cacheManager;
+	}
+
+	/**
+	 * cookie对象;
+	 * rememberMeCookie()方法是设置Cookie的生成模版，比如cookie的name，cookie的有效时间等等。
+	 * @return
+	 */
+	@Bean
+	public SimpleCookie rememberMeCookie(){
+		//System.out.println("ShiroConfiguration.rememberMeCookie()");
+		//这个参数是cookie的名称，对应前端的checkbox的name = rememberMe
+		SimpleCookie simpleCookie = new SimpleCookie("rememberMe");
+		//<!-- 记住我cookie生效时间30天 ,单位秒;-->
+		simpleCookie.setMaxAge(259200);
+		return simpleCookie;
+	}
+	//记住我
+	@Bean
+	public CookieRememberMeManager rememberMeManager(){
+		CookieRememberMeManager cookieRememberMeManager = new CookieRememberMeManager();
+		cookieRememberMeManager.setCookie(rememberMeCookie());
+		//这个地方有点坑，不是所有的base64编码都可以用，长度过大过小都不行，没搞明白，官网给出的要么0x开头十六进制，要么base64
+		cookieRememberMeManager.setCipherKey(Base64.decode("4AvVhmFLUs0KTA3Kprsdag=="));
+		return cookieRememberMeManager;
 	}
 }
