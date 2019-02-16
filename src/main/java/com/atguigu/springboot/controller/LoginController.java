@@ -6,7 +6,9 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
+import org.apache.shiro.crypto.hash.SimpleHash;
 import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -78,8 +80,17 @@ public class LoginController {
 	//数据初始化
 	@RequestMapping(value = "/addUser",method = RequestMethod.POST)
 	public String addUser(@RequestParam("username") String username,@RequestParam("password") String password,Map<String,Object> map){
+//        Object salt = null;//盐值
+		//盐值用的用的是对用户名的加密（测试用的"sw"）
+		ByteSource credentialsSalt01 = ByteSource.Util.bytes(username);
+		Object credential = password;//密码
+		String hashAlgorithmName = "MD5";//加密方式
+		//1024指的是加密的次数
+		Object simpleHash = new SimpleHash(hashAlgorithmName, credential,
+				credentialsSalt01, 1024);
+		System.out.println("加密后的值----->" + simpleHash);
 		map.put("username",username);
-		map.put("password",password);
+		map.put("password",simpleHash);
 		User user = loginService.addUser(map);
 		System.out.println("addUser is ok! \n" + user);
 		return "success";
