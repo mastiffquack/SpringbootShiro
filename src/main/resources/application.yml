@@ -1,0 +1,27 @@
+server:
+  port: 9082
+
+spring:
+   datasource:
+    type: com.alibaba.druid.pool.DruidDataSource            # 当前数据源操作类型
+    driver-class-name: com.mysql.jdbc.Driver              # mysql驱动包
+    url: jdbc:mysql://localhost:3306/spring_shiro?useUnicode=true&amp;characterEncoding=UTF-8              # 数据库名称
+    username: root
+    password: 123456
+    dbcp2:
+      min-idle: 5                                           # 数据库连接池的最小维持连接数
+      initial-size: 5                                       # 初始化连接数
+      max-total: 5                                          # 最大连接数
+      max-wait-millis: 200                                  # 等待连接获取的最大超时时间
+
+   jpa:
+    show-sql: true
+    hibernate: 
+      #ddl-auto: create							#每次运行该程序，没有表格会新建表格，表内有数据会清空
+      #ddl-auto: create-drop					#每次程序结束的时候会清空表
+      ddl-auto: update							#每次运行程序，没有表格会新建表格，表内有数据不会清空，只会更新
+      #ddl-auto: validate						#运行程序会校验数据与数据库的字段类型是否相同，不同会报错
+   http:
+    encoding: 
+      charset: utf-8
+      enabled: true
